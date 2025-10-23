@@ -3,595 +3,578 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>របាយការណ៍វត្តមានបុគ្គលិក</title>
+    <title>កម្មវិធីបង្កើតរបាយការណ៍វត្តមាន</title>
     <!-- ភ្ជាប់ Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- ភ្ជាប់ Google Fonts (Inter and Noto Sans Khmer) -->
+    <!-- ភ្ជាប់ Google Font សម្រាប់ភាសាខ្មែរ (Kantumruy Pro) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- ភ្ជាប់ jsPDF សម្រាប់បង្កើត PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    
-    <!-- ភ្ជាប់ Tom Select (for searchable dropdown) -->
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
     
     <style>
-        /* អនុវត្ត Font ដែលគាំទ្រភាសាខ្មែរ */
+        /* កំណត់ Font គោលសម្រាប់កម្មវិធីទាំងមូល */
         body {
-            font-family: 'Inter', 'Noto Sans Khmer', sans-serif;
+            font-family: 'Kantumruy Pro', sans-serif;
+            background-color: #f4f7f6;
         }
-        /* លាក់ลูกศรសម្រាប់ input type number */
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            cursor: pointer;
-            opacity: 0.8;
+        /* លាក់ព្រួញសម្រាប់ input type number (ទោះបីយើងមិនប្រើ តែល្អសម្រាប់ពេលក្រោយ) */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        /* រចនាប័ទ្មសម្រាប់ spinner */
+        .loader {
+            border-top-color: #3498db;
+            -webkit-animation: spin 1s linear infinite;
+            animation: spin 1s linear infinite;
+        }
+        @-webkit-keyframes spin {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* --- រចនាប័ទ្មសម្រាប់ Print --- */
+        @media print {
+            /* លាក់ធាតុដែលមិនត្រូវបោះពុម្ព */
+            body > .max-w-5xl > *:not(#report-output) {
+                display: none;
+            }
+            .no-print {
+                display: none !important;
+            }
 
-        /* Custom Tom Select styles to match Tailwind */
-        .ts-control {
-            padding: 0.75rem !important; /* p-3 */
-            border-radius: 0.5rem !important; /* rounded-lg */
-            border: 1px solid #D1D5DB !important; /* border-gray-300 */
-            box-shadow: none !important;
-        }
-        .ts-control.focus {
-            border-color: #2563EB !important; /* ring-blue-500 */
-            box-shadow: 0 0 0 2px #BFDBFE !important; /* focus:ring-2 focus:ring-blue-500 */
-        }
-        .ts-dropdown {
-            border-radius: 0.5rem !important;
-            border: 1px solid #D1D5DB !important;
-        }
-        .ts-dropdown .option {
-            padding: 0.75rem 1rem !important;
-        }
-        .ts-dropdown .option.active {
-            background-color: #DBEAFE !important; /* bg-blue-100 */
-            color: #1E40AF !important; /* text-blue-800 */
+            /* កំណត់ Body និង Container សម្រាប់ Print */
+            body, .max-w-5xl {
+                padding: 0 !important;
+                margin: 0 !important;
+                background-color: #ffffff !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+
+            /* កំណត់ផ្នែករបាយការណ៍ */
+            #report-output {
+                display: block !important;
+                margin: 0 !important;
+                padding: 1cm !important; /* បន្ថែមគែមសម្រាប់ក្រដាស */
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 100% !important;
+            }
+            
+            h1, h2, p, span {
+                color: #000000 !important;
+            }
+
+            /* ធានាថាតារាងមើលទៅស្អាតពេល Print */
+            table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+            }
+            thead {
+                background-color: #f0f0f0 !important;
+                display: table-header-group; /* ធានាថា Header ជាប់រាល់ទំព័រ */
+            }
+            th, td {
+                border: 1px solid #999 !important;
+                padding: 8px !important;
+                color: #000000 !important;
+            }
+            /* លុបផ្ទៃខាងក្រោយឆ្លាស់គ្នា */
+            tbody tr {
+                background-color: #ffffff !important;
+            }
+            /* ជៀសវាងការកាត់ផ្តាច់ព័ត៌មានសង្ខេប */
+            #employee-summary {
+                page-break-inside: avoid;
+                background-color: #f9f9f9 !important;
+                border: 1px solid #ccc !important;
+            }
+            
+            #no-records {
+                display: none; /* លាក់សារ "មិនមានទិន្នន័យ" ពេល Print បើមាន */
+            }
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen p-4 md:p-8">
+<body class="p-4 md:p-8">
 
-    <div class="max-w-6xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-xl">
+    <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-xl p-6 md:p-10">
         
-        <!-- បឋមកថា -->
-        <div class="flex items-center justify-center gap-3 mb-8">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10 text-blue-600">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18c-2.305 0-4.408.867-6 2.292m0-14.25v14.25" />
-            </svg>
-            <h1 class="text-3xl font-bold text-blue-700 text-center">
-                របាយការណ៍វត្តមានលំអិតប្រចាំខែ
-            </h1>
+        <!-- បឋម -->
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
+            របាយការណ៍វត្តមានបុគ្គលិក
+        </h1>
+        <p class="text-base text-gray-600 mb-8">
+            បង្កើតរបាយការណ៍លម្អិតដោយទាញទិន្នន័យពី Google Sheets។
+        </p>
+
+        <!-- ផ្នែកកំណត់ API Key -->
+        <div class="mb-8 p-5 bg-blue-50 border border-blue-200 rounded-lg">
+            <label for="api-key" class="block text-sm font-semibold text-blue-800 mb-2">
+                <span class="text-red-600">*</span> ជំហានទី១៖ បញ្ចូល Google Sheets API Key
+            </label>
+            <input type="password" id="api-key" placeholder="បិទភ្ជាប់ API Key របស់អ្នកនៅទីនេះ"
+                   class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            <p class="text-xs text-gray-600 mt-2">
+                កម្មវិធីនេះត្រូវការ API Key ដើម្បីទាញទិន្នន័យពី Google Sheet។ ទិន្នន័យ Sheet ត្រូវតែកំណត់ជាសាធារណៈ (Public)។
+            </p>
         </div>
 
-        <!-- ផ្ទាំងបញ្ជា (Controls) -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 items-end">
-            <!-- Google API Key Input -->
+        <!-- ផ្នែកបញ្ជា (Controls) -->
+        <h2 class="text-lg font-semibold text-gray-700 mb-3">ជំហានទី២៖ កំណត់ការស្វែងរក</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <!-- ជ្រើសរើសបុគ្គលិក -->
             <div>
-                <label for="apiKey" class="block text-sm font-medium text-gray-700 mb-1">Google API Key</label>
-                <input type="password" id="apiKey" placeholder="សូមបញ្ចូល API Key របស់អ្នកនៅទីនេះ" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 focus:outline-none" oninput="checkApiKey()">
-            </div>
-            
-            <!-- ជ្រើសរើសបុគ្គលិក (Tom Select) -->
-            <div>
-                <label for="employeeSelect" class="block text-sm font-medium text-gray-700 mb-1">ឈ្មោះ ឬ អត្តលេខ បុគ្គលិក</label>
-                <!-- This <select> will be initialized by Tom Select -->
-                <select id="employeeSelect" disabled placeholder="សូមបញ្ចូល API Key ជាមុនសិន...">
-                    <!-- Options will be added by JavaScript -->
-                </select>
+                <label for="employee-input" class="block text-sm font-medium text-gray-700 mb-1">
+                    ជ្រើសរើសបុគ្គលិក (វាយ ID ឬ ឈ្មោះ)
+                </label>
+                <input type="text" id="employee-input" list="employee-list" 
+                       placeholder="វាយដើម្បីស្វែងរក..."
+                       class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" disabled>
+                <datalist id="employee-list"></datalist>
             </div>
             
             <!-- ជ្រើសរើសថ្ងៃចាប់ផ្ដើម -->
             <div>
-                <label for="startDate" class="block text-sm font-medium text-gray-700 mb-1">ចាប់ពីថ្ងៃទី</label>
-                <input type="date" id="startDate" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 focus:outline-none">
+                <label for="start-date" class="block text-sm font-medium text-gray-700 mb-1">
+                    ចាប់ពីថ្ងៃទី
+                </label>
+                <input type="date" id="start-date" 
+                       class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
             </div>
-            
+
             <!-- ជ្រើសរើសថ្ងៃបញ្ចប់ -->
             <div>
-                <label for="endDate" class="block text-sm font-medium text-gray-700 mb-1">ដល់ថ្ងៃទី</label>
-                <input type="date" id="endDate" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 focus:outline-none">
+                <label for="end-date" class="block text-sm font-medium text-gray-700 mb-1">
+                    ដល់ថ្ងៃទី
+                </label>
+                <input type="date" id="end-date" 
+                       class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
             </div>
         </div>
 
         <!-- ប៊ូតុងបង្កើតរបាយការណ៍ -->
-        <button id="generateReportBtn" disabled class="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 active:bg-blue-800 transform active:scale-[0.99] transition duration-200 flex items-center justify-center gap-2 cursor-not-allowed opacity-50 shadow-md">
-            <!-- Icon បង្កើត (SVG) -->
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 0 1 0 3.75H5.625a1.875 1.875 0 0 1 0-3.75Z" />
-            </svg>
-            បង្កើតរបាយការណ៍
-        </button>
-
-        <!-- កន្លែងបង្ហាញពេលកំពុងទាញទិន្នន័យ (Loading Spinner) -->
-        <div id="loader" class="text-center py-10 hidden">
-            <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p class="mt-2 text-gray-600">កំពុងទាញទិន្នន័យ សូមមេត្តារង់ចាំ...</p>
+        <div class="flex flex-col md:flex-row gap-4 border-t pt-6 mt-6">
+             <button id="fetch-button" 
+                    class="w-full md:w-1/2 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
+                 ១. ទាញទិន្នន័យបុគ្គលិក
+             </button>
+            <button id="generate-button" 
+                    class="w-full md:w-1/2 bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out" disabled>
+                ២. បង្កើតរបាយការណ៍
+            </button>
         </div>
 
-        <!-- កន្លែងបង្ហាញកំហុស (Error Message) -->
-        <div id="errorDiv" class="text-center py-6 text-red-600 font-medium hidden"></div>
+        <!-- កន្លែងបង្ហាញ Error ឬ Loading -->
+        <div id="message-box" class="mt-6 hidden">
+            <!-- Spinner -->
+            <div id="loader" class="hidden justify-center items-center">
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mr-3"></div>
+                <span class="text-gray-600">កំពុងទាញទិន្នន័យ...</span>
+            </div>
+            <!-- Error -->
+            <div id="error-message" class="hidden p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                <!-- ខ្លឹមសារ Error នឹងបង្ហាញនៅទីនេះ -->
+            </div>
+        </div>
 
-        <!-- ផ្ទាំងបង្ហាញរបាយការណ៍ -->
-        <div id="reportContainer" class="mt-8 hidden">
-            <!-- ប៊ូតុងទាញយក PDF -->
-            <div class="flex justify-end">
-                <button id="downloadPdfBtn" class="mb-4 bg-green-600 text-white py-2 px-5 rounded-lg font-semibold hover:bg-green-700 active:bg-green-800 transition duration-200 flex items-center gap-2 shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+        <!-- ផ្នែកបង្ហាញលទ្ធផល (របាយការណ៍) -->
+        <div id="report-output" class="mt-10 hidden">
+
+            <!-- ប៊ូតុង Print/PDF -->
+            <div class="flex justify-between items-center mb-6">
+                 <h2 class="text-xl md:text-2xl font-bold text-gray-800 border-b-2 border-blue-200 pb-2 flex-grow">
+                    របាយការណ៍លម្អិត
+                </h2>
+                <button id="print-button" 
+                        onclick="window.print()"
+                        class="no-print ml-6 bg-gray-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out flex items-center shrink-0">
+                    <!-- SVG Icon for Print -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v6a2 2 0 002 2h1v3a1 1 0 001 1h8a1 1 0 001-1v-3h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a1 1 0 00-1-1H6a1 1 0 00-1 1zM6 4h8v3H6V4zm8 12H6v-3h8v3zm-1-6H7v-2h6v2z" clip-rule="evenodd"></path>
                     </svg>
-                    ទាញយកជា PDF
+                    ទាញយក PDF / បោះពុម្ព
                 </button>
             </div>
-            
-            <!-- ព័ត៌មានបុគ្គលិក -->
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2 border-gray-200">ព័ត៌មានបុគ្គលិក</h2>
-            <div class="bg-gray-50 p-6 rounded-lg mb-6 grid grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
-                <div>
-                    <strong class="text-gray-500 font-medium text-sm">អត្តលេខ:</strong>
-                    <span id="reportId" class="text-gray-900 font-semibold block"></span>
-                </div>
-                <div>
-                    <strong class="text-gray-500 font-medium text-sm">ឈ្មោះ:</strong>
-                    <span id="reportName" class="text-gray-900 font-semibold block"></span>
-                </div>
-                <div>
-                    <strong class="text-gray-500 font-medium text-sm">ភេទ:</strong>
-                    <span id="reportGender" class="text-gray-900 font-semibold block"></span>
-                </div>
-                <div>
-                    <strong class="text-gray-500 font-medium text-sm">ក្រុម:</strong>
-                    <span id="reportGroup" class="text-gray-900 font-semibold block"></span>
-                </div>
-                <div>
-                    <strong class="text-gray-500 font-medium text-sm">ផ្នែកការងារ:</strong>
-                    <span id="reportDept" class="text-gray-900 font-semibold block"></span>
-                </div>
-                <div>
-                    <strong class="text-gray-500 font-medium text-sm">ថ្នាក់:</strong>
-                    <span id="reportClass" class="text-gray-900 font-semibold block"></span>
-                </div>
+
+            <!-- ព័ត៌មានសង្ខេបរបស់បុគ្គលិក -->
+            <div id="employee-summary" 
+                 class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 p-6 bg-gray-50 rounded-lg shadow-sm mb-8 border border-gray-200">
+                <!-- ព័ត៌មានបុគ្គលិកនឹងបង្ហាញនៅទីនេះ -->
             </div>
 
-            <!-- តារាងរបាយការណ៍លម្អិត -->
-            <h2 class="text-2xl font-semibold text-gray-800 mb-4 border-b pb-2 border-gray-200">របាយការណ៍វត្តមានលម្អិត</h2>
-            <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
-                <table class="w-full text-left" id="reportTable">
-                    <thead class="bg-gray-100 border-b-2 border-gray-200">
+            <!-- តារាងលម្អិតវត្តមាន -->
+            <div class="overflow-x-auto shadow-md rounded-lg">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-100">
                         <tr>
-                            <th class="p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">#</th>
-                            <th class="p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">កាលបរិច្ឆេទ</th>
-                            <th class="p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">កាលវិភាគ</th>
-                            <th class="p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">ម៉ោងចូល</th>
-                            <th class="p-3 text-xs font-semibold text-gray-600 uppercase tracking-wider">ម៉ោងចេញ</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                ល.រ
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                កាលបរិច្ឆេទ
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                កាលវិភាគ
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                ម៉ោងចូល
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
+                                ម៉ោងចេញ
+                            </th>
                         </tr>
                     </thead>
-                    <tbody id="reportTableBody" class="divide-y divide-gray-200">
-                        <!-- ទិន្នន័យនឹងត្រូវបញ្ចូលមកទីនេះដោយ JavaScript -->
+                    <tbody id="report-table-body" class="bg-white divide-y divide-gray-200">
+                        <!-- ទិន្នន័យវត្តមាននឹងបង្ហាញនៅទីនេះ -->
                     </tbody>
                 </table>
             </div>
-            <div id="noDataMessage" class="text-center py-6 text-gray-500 hidden">
-                មិនមានទិន្នន័យសម្រាប់ជួរកាលបរិច្ឆេទដែលបានជ្រើសរើសទេ។
+            
+            <div id="no-records" class="hidden text-center p-6 bg-gray-50 rounded-lg mt-4">
+                <p class="text-gray-600">មិនមានទិន្នន័យវត្តមានសម្រាប់បុគ្គលិកនេះ ក្នុងចន្លោះកាលបរិច្ឆេទដែលបានជ្រើសរើសទេ។</p>
             </div>
         </div>
-
     </div>
 
-    <!-- ភ្ជាប់ Google API Client -->
-    <script src="https://apis.google.com/js/api.js"></script>
-
     <script>
-        // --- និយមន័យអថេរ Global ---
+        // --- ផ្នែកកំណត់ค่าអចិន្ត្រៃយ៍ ---
         const SHEET_ID = '14eA00GXamqLkhuLAzVYPOBKads7XUZ5mfVRyqSGQwfk';
         const SHEET_NAME = 'Data';
+        // យើងនឹងទាញទិន្នន័យពីជួរ B ដល់ K
+        const DATA_RANGE = `${SHEET_NAME}!B2:K`; 
 
-        // និយមន័យ DOM Elements
-        const apiKeyInput = document.getElementById('apiKey');
-        const employeeSelect = document.getElementById('employeeSelect'); // This is still the <select> element
-        const startDateInput = document.getElementById('startDate');
-        const endDateInput = document.getElementById('endDate');
-        const generateReportBtn = document.getElementById('generateReportBtn');
-        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+        // --- ផ្នែករក្សាទុកទិន្នន័យដែលបានទាញមក ---
+        let allData = []; // រក្សាទុកទិន្នន័យឆៅទាំងអស់ពី Sheet
+        let employeeMap = new Map(); // រក្សាទុកព័ត៌មានបុគ្គលិក (Unique)
+
+        // --- ផ្នែកយោងទៅធាតុ DOM ---
+        const apiKeyInput = document.getElementById('api-key');
+        const employeeInput = document.getElementById('employee-input');
+        const employeeList = document.getElementById('employee-list');
+        const startDateInput = document.getElementById('start-date');
+        const endDateInput = document.getElementById('end-date');
+        const fetchButton = document.getElementById('fetch-button');
+        const generateButton = document.getElementById('generate-button');
+        
+        const messageBox = document.getElementById('message-box');
         const loader = document.getElementById('loader');
-        const errorDiv = document.getElementById('errorDiv');
-        const reportContainer = document.getElementById('reportContainer');
-        const reportTableBody = document.getElementById('reportTableBody');
-        const noDataMessage = document.getElementById('noDataMessage');
+        const errorMessage = document.getElementById('error-message');
+        
+        const reportOutput = document.getElementById('report-output');
+        const employeeSummary = document.getElementById('employee-summary');
+        const reportTableBody = document.getElementById('report-table-body');
+        const noRecordsMessage = document.getElementById('no-records');
 
-        // អថេរសម្រាប់ផ្ទុកទិន្នន័យ
-        let gapiClientLoaded = false;
-        let uniqueEmployees = new Map(); // ប្រើ Map ដើម្បីផ្ទុក [id, name]
-        let tomSelectInstance = null; // សម្រាប់ Tom Select
-        let currentReportData = {
-            employeeInfo: {},
-            records: []
-        };
+        // --- មុខងារ Helper (ជំនួយ) ---
 
-        // --- មុខងារពិនិត្យ API Key ---
-        function checkApiKey() {
-            const apiKey = apiKeyInput.value;
-            if (apiKey && !gapiClientLoaded) {
-                // បើកដំណើរការ GAPI client
-                gapi.load('client', initClient);
-            } else if (!apiKey) {
-                // បិទ
-                disableControls(true, '-- សូមបញ្ចូល API Key ជាមុនសិន --');
-                gapiClientLoaded = false;
-            }
-        }
-
-        // --- មុខងារចាប់ផ្ដើម GAPI Client ---
-        async function initClient() {
-            const apiKey = apiKeyInput.value;
-            if (!apiKey) {
-                showError('សូមបញ្ចូល Google API Key ជាមុនសិន។');
-                return;
-            }
-            
-            try {
-                await gapi.client.init({
-                    'apiKey': apiKey,
-                    'discoveryDocs': ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
-                });
-                gapiClientLoaded = true;
-                
-                // បង្កើត Tom Select Instance (ប្រសិនបើវាមិនទាន់បានបង្កើត)
-                if (!tomSelectInstance) {
-                    initializeTomSelect();
-                }
-
-                // បន្ទាប់ពី init រួចរាល់, ទាញទិន្នន័យបុគ្គលិកសម្រាប់ dropdown
-                await loadEmployeeList();
-            } catch (error) {
-                console.error('GAPI Client Error:', error);
-                showError('API Key មិនត្រឹមត្រូវ ឬមានបញ្ហាក្នុងការភ្ជាប់ GAPI។');
-                disableControls(true, '-- API Key មិនត្រឹមត្រូវ --');
-                gapiClientLoaded = false;
-            }
-        }
-
-        // --- មុខងារបង្កើត Tom Select ---
-        function initializeTomSelect() {
-            if (tomSelectInstance) {
-                tomSelectInstance.destroy();
-            }
-            tomSelectInstance = new TomSelect('#employeeSelect', {
-                create: false,
-                sortField: {
-                    field: "text",
-                    direction: "asc"
-                },
-                placeholder: '-- សូមបញ្ចូល API Key ជាមុនសិន --'
-            });
-            tomSelectInstance.disable(); // Disable it initially
-        }
-
-        // --- មុខងារទាញបញ្ជីបុគ្គលិកសម្រាប់ Dropdown ---
-        async function loadEmployeeList() {
-            loader.classList.remove('hidden');
-            showError(''); // Clear error
-            disableControls(true, 'កំពុងទាញទិន្នន័យបុគ្គលិក...');
-            
-            try {
-                // ទាញយកតែ Column E (Name) និង G (ID)
-                const response = await gapi.client.sheets.spreadsheets.values.get({
-                    spreadsheetId: SHEET_ID,
-                    range: `${SHEET_NAME}!E2:G`,
-                });
-
-                const rows = response.result.values;
-                if (rows && rows.length > 0) {
-                    uniqueEmployees.clear();
-                    rows.forEach(row => {
-                        const name = row[0]; // Column E
-                        const id = row[2];   // Column G
-                        if (id && name && !uniqueEmployees.has(id)) {
-                            uniqueEmployees.set(id, name);
-                        }
-                    });
-
-                    // បញ្ចូលទិន្នន័យទៅក្នុង Tom Select
-                    tomSelectInstance.clearOptions(); // សម្អាត option ចាស់
-                    tomSelectInstance.addOption({ value: '', text: '-- សូមជ្រើសរើសបុគ្គលិក --' });
-
-                    // Sort តាមឈ្មោះ
-                    const sortedEmployees = [...uniqueEmployees.entries()].sort((a, b) => a[1].localeCompare(b[1], 'km'));
-                    
-                    sortedEmployees.forEach(([id, name]) => {
-                        tomSelectInstance.addOption({
-                            value: id,
-                            text: `${id} - ${name}`
-                        });
-                    });
-                    
-                    tomSelectInstance.setValue(''); // Reset selection
-                    disableControls(false); // បើក Controls វិញ
-
-                } else {
-                    showError('មិនមានទិន្នន័យបុគ្គលិកនៅក្នុង Sheet ទេ។');
-                    disableControls(true, '-- មិនមានទិន្នន័យ --');
-                }
-
-            } catch (error) {
-                console.error('Error loading employee list:', error);
-                showError('បរាជ័យក្នុងការទាញបញ្ជីបុគ្គលិក។ សូមពិនិត្យ API Key និង Sheet ID។');
-                disableControls(true, '-- មានបញ្ហា Error --');
-            } finally {
-                loader.classList.add('hidden');
-            }
-        }
-
-        // --- មុខងារសម្រាប់បើក/បិទ Controls ---
-        function disableControls(disabled, message = '') {
-            if (!tomSelectInstance) {
-                // Fallback in case Tom Select isn't ready
-                employeeSelect.disabled = true;
-            } else {
-                // Use Tom Select API
-                if (disabled) {
-                    tomSelectInstance.disable();
-                    if (message) {
-                        tomSelectInstance.clearOptions();
-                        tomSelectInstance.addOption({ value: '', text: message });
-                        tomSelectInstance.setValue('');
-                        tomSelectInstance.updatePlaceholder(message);
-                    }
-                } else {
-                    tomSelectInstance.enable();
-                    tomSelectInstance.updatePlaceholder('-- សូមជ្រើសរើសបុគ្គលិក --');
-                }
-            }
-
-            // Handle the generate button
-            if (disabled) {
-                generateReportBtn.disabled = true;
-                generateReportBtn.classList.add('cursor-not-allowed', 'opacity-50');
-            } else {
-                generateReportBtn.disabled = false;
-                generateReportBtn.classList.remove('cursor-not-allowed', 'opacity-50');
-            }
-        }
-
-        // --- មុខងារបង្ហាញ Error ---
+        /**
+         * បង្ហាញសារ Error
+         * @param {string} message - ខ្លឹមសារ Error
+         */
         function showError(message) {
-            errorDiv.textContent = message;
-            errorDiv.classList.toggle('hidden', !message);
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('hidden');
+            loader.classList.add('hidden');
+            messageBox.classList.remove('hidden');
         }
 
-        // --- មុខងារបង្កើតរបាយការណ៍ (Event Handler) ---
-        async function handleGenerateReport() {
-            // 1. ពិនិត្យ Input
-            const employeeId = tomSelectInstance.getValue(); // យកតម្លៃពី Tom Select
-            const startDate = startDateInput.value;
-            const endDate = endDateInput.value;
-
-            showError('');
-            reportContainer.classList.add('hidden');
-            noDataMessage.classList.add('hidden');
-
-            if (!employeeId || !startDate || !endDate) {
-                showError('សូមជ្រើសរើសបុគ្គលិក និងបំពេញថ្ងៃចាប់ផ្ដើម និងថ្ងៃបញ្ចប់។');
-                return;
-            }
-
-            const jsStartDate = new Date(startDate + 'T00:00:00');
-            const jsEndDate = new Date(endDate + 'T23:59:59');
-
-            if (jsEndDate < jsStartDate) {
-                showError('ថ្ងៃបញ្ចប់មិនអាចតូចជាងថ្ងៃចាប់ផ្ដើមបានទេ។');
-                return;
-            }
-
-            // 2. បង្ហាញ Loader
+        /**
+         * បង្ហាញ Spinner ពេលកំពុងដំណើរការ
+         */
+        function showLoader() {
+            errorMessage.classList.add('hidden');
+            loader.style.display = 'flex'; // ប្រើ style.display ព្រោះ Tailwind class 'flex' ត្រូវ set ដោយផ្ទាល់
             loader.classList.remove('hidden');
+            messageBox.classList.remove('hidden');
+            reportOutput.classList.add('hidden'); // លាក់លទ្ធផលចាស់
+        }
 
-            // 3. ទាញទិន្នន័យទាំងអស់
+        /**
+         * លាក់ Spinner និង Error
+         */
+        function hideMessages() {
+            messageBox.classList.add('hidden');
+            loader.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+        }
+
+        /**
+         * បំប្លែងកាលបរិច្ឆេទពីទម្រង់ "1-Aug-2025" ទៅជា Object Date
+         * @param {string} dateString - កាលបរិច្ឆេទជាអត្ថបទ (ឧ. 1-Aug-2025)
+         * @returns {Date | null} - Object Date ឬ null បើទម្រង់ខុស
+         */
+        function parseSheetDate(dateString) {
+            if (!dateString) return null;
+            
+            const months = {
+                'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+                'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+            };
+            
+            const parts = dateString.split('-'); // ["1", "Aug", "2025"]
+            if (parts.length !== 3) return null;
+            
+            const day = parseInt(parts[0], 10);
+            const month = months[parts[1]];
+            const year = parseInt(parts[2], 10);
+            
+            if (isNaN(day) || month === undefined || isNaN(year)) return null;
+            
+            // កំណត់ម៉ោង 00:00:00 ដើម្បីងាយស្រួលប្រៀបធៀប
+            return new Date(year, month, day, 0, 0, 0); 
+        }
+
+        // --- មុខងារស្នូល (Core Functions) ---
+
+        /**
+         * ទាញទិន្នន័យទាំងអស់ពី Google Sheet
+         */
+        async function fetchSheetData() {
+            const apiKey = apiKeyInput.value.trim();
+            if (!apiKey) {
+                showError('សូមបញ្ចូល API Key ជាមុនសិន។');
+                return;
+            }
+
+            showLoader();
+            allData = [];
+            employeeMap.clear();
+            employeeList.innerHTML = ''; // សម្អាត Datalist ចាស់
+
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${DATA_RANGE}?key=${apiKey}`;
+
             try {
-                // ទាញទិន្នន័យពី B ដល់ K
-                const response = await gapi.client.sheets.spreadsheets.values.get({
-                    spreadsheetId: SHEET_ID,
-                    range: `${SHEET_NAME}!B2:K`,
-                });
+                const response = await fetch(url);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message || 'មិនអាចទាញទិន្នន័យបានទេ។ សូមពិនិត្យ API Key ឬ Sheet ID។');
+                }
 
-                const allRows = response.result.values;
-                if (!allRows || allRows.length === 0) {
-                    showError('មិនមានទិន្នន័យវត្តមាននៅក្នុង Sheet ទេ។');
-                    loader.classList.add('hidden');
+                const data = await response.json();
+                const values = data.values;
+
+                if (!values || values.length === 0) {
+                    showError('រកមិនឃើញទិន្នន័យនៅក្នុង Sheet ទេ។');
                     return;
                 }
 
-                // 4. ត្រងទិន្នន័យ
-                let employeeInfo = {};
-                const attendanceRecords = [];
+                // ចាប់ផ្ដើមដំណើរការទិន្នន័យ
+                values.forEach(row => {
+                    // Mapping តាមជួរឈរដែលបានស្នើ B=0, C=1, D=2, E=3, F=4, G=5, H=6, I=7, J=8, K=9
+                    const record = {
+                        group: row[0] || '',     // B
+                        class: row[1] || '',     // C
+                        department: row[2] || '',// D
+                        name: row[3] || '',      // E
+                        gender: row[4] || '',    // F
+                        id: row[5] || '',        // G
+                        date: row[6] || '',      // H
+                        schedule: row[7] || '',  // I
+                        timeIn: row[8] || '',    // J
+                        timeOut: row[9] || ''    // K
+                    };
 
-                allRows.forEach(row => {
-                    // Mapping តាមជួរឈរ B ដល់ K
-                    const id = row[5]; // G
+                    // បន្ថែមទៅក្នុងទិន្នន័យសរុប
+                    if(record.id && record.name && record.date) {
+                        allData.push(record);
 
-                    // ត្រងយកតែបុគ្គលិកដែលបានជ្រើសរើស
-                    if (id === employeeId) {
-                        const dateStr = row[6]; // H
-                        
-                        // ពិនិត្យមើលថាតើ DateStr ត្រឹមត្រូវឬអត់
-                        if (dateStr) {
-                             // បម្លែង "1-Aug-2025" ទៅជា Object Date
-                             // យើងត្រូវប្តូរ '-' ទៅ ' ' (e.g., "1 Aug 2025") ដើម្បីឲ្យ new Date() ដំណើរការបានត្រឹមត្រូវ
-                            const recordDate = new Date(dateStr.replace(/-/g, ' '));
-                            
-                            // ពិនិត្យមើលថាកាលបរិច្ឆេទត្រឹមត្រូវ និងស្ថិតក្នុងចន្លោះដែលបានជ្រើសរើស
-                            if (!isNaN(recordDate) && recordDate >= jsStartDate && recordDate <= jsEndDate) {
-                                
-                                // រក្សាទុកព័ត៌មានបុគ្គលិក (យកតែម្តង)
-                                if (!employeeInfo.id) {
-                                    employeeInfo = {
-                                        id: id,
-                                        name: row[3],     // E
-                                        gender: row[4],   // F
-                                        group: row[0],    // B
-                                        dept: row[2],     // D
-                                        class: row[1],    // C
-                                    };
-                                }
-                                
-                                // បន្ថែមទិន្នន័យវត្តមាន
-                                attendanceRecords.push({
-                                    jsDate: recordDate,
-                                    date: dateStr,          // H
-                                    schedule: row[7] || '', // I
-                                    timeIn: row[8] || '',   // J
-                                    timeOut: row[9] || ''   // K
-                                });
-                            }
+                        // បង្កើត Unique List សម្រាប់បុគ្គលិក
+                        const employeeKey = `${record.id} - ${record.name}`;
+                        if (!employeeMap.has(employeeKey)) {
+                            employeeMap.set(employeeKey, {
+                                id: record.id,
+                                name: record.name,
+                                gender: record.gender,
+                                group: record.group,
+                                department: record.department,
+                                class: record.class
+                            });
                         }
                     }
                 });
-
-                // 5. តម្រៀបទិន្នន័យតាមកាលបរិច្ឆេទ
-                attendanceRecords.sort((a, b) => a.jsDate - b.jsDate);
                 
-                // រក្សាទុកទិន្នន័យសម្រាប់ PDF
-                currentReportData = { employeeInfo, records: attendanceRecords };
-
-                // 6. បង្ហាញទិន្នន័យ
-                renderReport(employeeInfo, attendanceRecords);
-
+                // បញ្ចូលទិន្នន័យទៅក្នុង Datalist
+                populateDatalist();
+                hideMessages();
+                
+                // បើកឲ្យប្រើប្រាស់ Input និងប៊ូតុងបង្កើតរបាយការណ៍
+                employeeInput.disabled = false;
+                generateButton.disabled = false;
+                fetchButton.textContent = "ទាញទិន្នន័យឡើងវិញ";
+                
+                // បង្ហាញសារជោគជ័យបណ្ដោះអាសន្ន
+                messageBox.classList.remove('hidden');
+                errorMessage.classList.remove('hidden');
+                errorMessage.classList.replace('bg-red-100', 'bg-green-100');
+                errorMessage.classList.replace('border-red-400', 'border-green-400');
+                errorMessage.classList.replace('text-red-700', 'text-green-700');
+                errorMessage.textContent = `ទាញទិន្នន័យបាន ${allData.length} កំណត់ត្រា និង ${employeeMap.size} បុគ្គលិក។`;
+                
+                setTimeout(hideMessages, 3000); // លាក់សារជោគជ័យ
+                
             } catch (error) {
-                console.error('Error fetching report data:', error);
-                showError('បរាជ័យក្នុងការទាញទិន្នន័យរបាយការណ៍។ សូមព្យាយាមម្តងទៀត។');
-            } finally {
-                loader.classList.add('hidden');
+                showError(`Error: ${error.message}`);
+                console.error('Fetch Error:', error);
             }
         }
-        
-        // --- មុខងារបង្ហាញទិន្នន័យលើតារាង HTML ---
-        function renderReport(employeeInfo, records) {
-            // បង្ហាញព័ត៌មានបុគ្គលិក
-            document.getElementById('reportId').textContent = employeeInfo.id || 'N/A';
-            document.getElementById('reportName').textContent = employeeInfo.name || 'N/A';
-            document.getElementById('reportGender').textContent = employeeInfo.gender || 'N/A';
-            document.getElementById('reportGroup').textContent = employeeInfo.group || 'N/A';
-            document.getElementById('reportDept').textContent = employeeInfo.dept || 'N/A';
-            document.getElementById('reportClass').textContent = employeeInfo.class || 'N/A';
 
-            // សម្អាតតារាងចាស់
-            reportTableBody.innerHTML = '';
-            noDataMessage.classList.add('hidden'); // លាក់សារចាស់
+        /**
+         * បញ្ចូលឈ្មោះបុគ្គលិកទៅក្នុង <datalist>
+         */
+        function populateDatalist() {
+            employeeList.innerHTML = ''; // សម្អាត
+            for (const key of employeeMap.keys()) {
+                const option = document.createElement('option');
+                option.value = key;
+                employeeList.appendChild(option);
+            }
+        }
 
+        /**
+         * បង្កើត និងបង្ហាញរបាយការណ៍
+         */
+        function generateReport() {
+            const selectedEmployeeKey = employeeInput.value;
+            const startDate = startDateInput.value;
+            const endDate = endDateInput.value;
+
+            // --- ពិនិត្យ Input ---
+            if (!selectedEmployeeKey || !employeeMap.has(selectedEmployeeKey)) {
+                showError('សូមជ្រើសរើសបុគ្គលិកពីក្នុងបញ្ជី។');
+                return;
+            }
+            if (!startDate || !endDate) {
+                showError('សូមជ្រើសរើសចន្លោះកាលបរិច្ឆេទ (ថ្ងៃចាប់ផ្ដើម និង ថ្ងៃបញ្ចប់)។');
+                return;
+            }
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            // កំណត់ម៉ោងឲ្យត្រូវ ដើម្បីប្រៀបធៀប
+            start.setHours(0, 0, 0, 0);
+            end.setHours(23, 59, 59, 999); 
+
+            if (start > end) {
+                showError('ថ្ងៃចាប់ផ្ដើម មិនអាចធំជាងថ្ងៃបញ្ចប់បានទេ។');
+                return;
+            }
+
+            hideMessages();
+            
+            // --- ដំណើរការទិន្នន័យ ---
+            const employeeInfo = employeeMap.get(selectedEmployeeKey);
+            
+            //  lọc (Filter) ទិន្នន័យវត្តមាន
+            const records = allData.filter(record => {
+                const recordDate = parseSheetDate(record.date);
+                if (!recordDate) return false; // រំលងបើថ្ងៃខែទម្រង់ខុស
+                
+                return record.id === employeeInfo.id &&
+                       record.name === employeeInfo.name &&
+                       recordDate >= start &&
+                       recordDate <= end;
+            });
+            
+            // --- បង្ហាញលទ្ធផល ---
+            renderReport(employeeInfo, records);
+        }
+
+        /**
+         * បង្ហាញលទ្ធផលទៅលើ UI
+         * @param {object} info - ព័ត៌មានបុគ្គលិក
+         * @param {array} records - បញ្ជីវត្តមានដែលបាន lọc រួច
+         */
+        function renderReport(info, records) {
+            // 1. បង្ហាញព័ត៌មានសង្ខេប
+            employeeSummary.innerHTML = `
+                <div class="col-span-1 sm:col-span-2 md:col-span-3">
+                    <p class="text-lg font-bold text-blue-800">${info.name}</p>
+                    <p class="text-sm text-gray-600">អត្តលេខ: ${info.id}</p>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold text-gray-500 block">ភេទ</span>
+                    <span class="text-sm font-medium text-gray-800">${info.gender || 'N/A'}</span>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold text-gray-500 block">ក្រុម</span>
+                    <span class="text-sm font-medium text-gray-800">${info.group || 'N/A'}</span>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold text-gray-500 block">ផ្នែក</span>
+                    <span class="text-sm font-medium text-gray-800">${info.department || 'N/A'}</span>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold text-gray-500 block">ថ្នាក់</span>
+                    <span class="text-sm font-medium text-gray-800">${info.class || 'N/A'}</span>
+                </div>
+            `;
+
+            // 2. បង្ហាញតារាងលម្អិត
+            reportTableBody.innerHTML = ''; // សម្អាតតារាងចាស់
+            
             if (records.length === 0) {
-                // បង្ហាញសារ "មិនមានទិន្នន័យ"
-                noDataMessage.classList.remove('hidden');
+                noRecordsMessage.classList.remove('hidden');
             } else {
-                // បញ្ចូលទិន្នន័យថ្មី
+                noRecordsMessage.classList.add('hidden');
+                
+                // តម្រៀបតាមកាលបរិច្ឆេទ ពីចាស់ទៅថ្មី
+                records.sort((a, b) => parseSheetDate(a.date) - parseSheetDate(b.date));
+                
                 records.forEach((record, index) => {
                     const row = document.createElement('tr');
-                    row.className = (index % 2 === 0) ? 'bg-white' : 'bg-gray-50 hover:bg-gray-100';
+                    row.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
                     row.innerHTML = `
-                        <td class="p-3 text-sm text-gray-700">${index + 1}</td>
-                        <td class="p-3 text-sm text-gray-900 font-medium">${record.date}</td>
-                        <td class="p-3 text-sm text-gray-700">${record.schedule}</td>
-                        <td class="p-3 text-sm text-gray-700">${record.timeIn}</td>
-                        <td class="p-3 text-sm text-gray-700">${record.timeOut}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            ${index + 1}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            ${record.date}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            ${record.schedule || ''}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            ${record.timeIn || 'N/A'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            ${record.timeOut || 'N/A'}
+                        </td>
                     `;
                     reportTableBody.appendChild(row);
                 });
             }
             
-            // បង្ហាញផ្ទាំងរបាយការណ៍
-            reportContainer.classList.remove('hidden');
+            // 3. បង្ហាញផ្នែកលទ្ធផលទាំងមូល
+            reportOutput.classList.remove('hidden');
+            
+            // រំកិលអេក្រង់ទៅមើលលទ្ធផល
+            reportOutput.scrollIntoView({ behavior: 'smooth' });
         }
-
-        // --- មុខងារទាញយក PDF ---
-        function handleDownloadPdf() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            const { employeeInfo, records } = currentReportData;
-
-            // ចំណាំ៖ jsPDF មិនគាំទ្រ Font ខ្មែរដោយស្វ័យប្រវត្តិទេ។ 
-            // អក្សរខ្មែរអាចនឹងមិនបង្ហាញត្រឹមត្រូវនៅក្នុង PDF។
-            // ដើម្បីឲ្យវាដំណើរការ យើងត្រូវការ embed font ដែលស្មុគស្មាញ។
-            // សម្រាប់ពេលនេះ យើងនឹងប្រើ Font ធម្មតា (ដែលអាចនឹងមិនបង្ហាញអក្សរខ្មែរ)
-            
-            // 1. បឋមកថា
-            doc.setFontSize(18);
-            // ប្រើភាសាអង់គ្លេសសម្រាប់ PDF Title ដើម្បីចៀសវាង Error Font
-            doc.text("Employee Attendance Report", 105, 22, { align: 'center' }); 
-
-            // 2. ព័ត៌មានបុគ្គលិក (ជាភាសាអង់គ្លេស)
-            doc.setFontSize(11);
-            doc.text(`Employee ID: ${employeeInfo.id || 'N/A'}`, 14, 35);
-            doc.text(`Name: ${employeeInfo.name || 'N/A'}`, 14, 42);
-            doc.text(`Department: ${employeeInfo.dept || 'N/A'}`, 14, 49);
-            
-            doc.text(`Gender: ${employeeInfo.gender || 'N/A'}`, 110, 35);
-            doc.text(`Group: ${employeeInfo.group || 'N/A'}`, 110, 42);
-            doc.text(`Class: ${employeeInfo.class || 'N/A'}`, 110, 49);
-            
-            doc.text(`Date Range: ${startDateInput.value} to ${endDateInput.value}`, 14, 58);
-
-
-            // 3. តារាងទិន្នន័យ
-            const tableHeaders = ["#", "Date", "Schedule", "Time In", "Time Out"];
-            const tableBody = records.map((r, index) => [
-                index + 1,
-                r.date,
-                r.schedule,
-                r.timeIn,
-                r.timeOut
-            ]);
-
-            doc.autoTable({
-                startY: 68,
-                head: [tableHeaders],
-                body: tableBody,
-                theme: 'striped',
-                headStyles: { fillColor: [30, 64, 175] }, // ពណ៌ខៀវ (blue-700)
-                styles: {
-                    font: 'helvetica', // ប្រើ Font ធម្មតា
-                    fontSize: 9
-                },
-                didDrawCell: (data) => {
-                    // Optional: Custom styling if needed
-                }
-            });
-
-            // 4. រក្សាទុក File
-            doc.save(`Attendance_Report_${employeeInfo.id}_${startDateInput.value}.pdf`);
-        }
-
-
+        
         // --- ភ្ជាប់ Event Listeners ---
-        // មិនប្រើ addEventListener សម្រាប់ apiKeyInput ព្រោះ oninput ត្រូវបានដាក់ក្នុង HTML រួចហើយ
-        generateReportBtn.addEventListener('click', handleGenerateReport);
-        downloadPdfBtn.addEventListener('click', handleDownloadPdf);
-
-        // កំណត់តម្លៃថ្ងៃទីបច្ចុប្បន្នសម្រាប់ Input
-        function setDefaultDates() {
-            const today = new Date();
-            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-            
-            endDateInput.value = today.toISOString().split('T')[0];
-            startDateInput.value = firstDayOfMonth.toISOString().split('T')[0];
-        }
-
-        // Initialize TomSelect on window load, but in a disabled state
-        // The checkApiKey function will handle enabling it.
-        window.onload = () => {
-            setDefaultDates();
-            initializeTomSelect();
-        };
+        fetchButton.addEventListener('click', fetchSheetData);
+        generateButton.addEventListener('click', generateReport);
+        
+        // កំណត់ថ្ងៃខែ Default (ឧ. ដើមខែ និង ថ្ងៃបច្ចុប្បន្ន)
+        const today = new Date();
+        const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        
+        startDateInput.value = firstDayOfMonth.toISOString().split('T')[0];
+        endDateInput.value = today.toISOString().split('T')[0];
 
     </script>
 
 </body>
 </html>
-
 
