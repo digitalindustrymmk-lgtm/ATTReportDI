@@ -3,23 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>កម្មវិធីបង្កើតរបាយការណ៍វត្តមាន</title>
-    <!-- ភ្ជាប់ Tailwind CSS -->
+    <title>របាយការណ៍វត្តមានបុគ្គលិក</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- ភ្ជាប់ Google Font សម្រាប់ភាសាខ្មែរ (Kantumruy Pro) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* កំណត់ Font គោលសម្រាប់កម្មវិធីទាំងមូល */
         body {
             font-family: 'Kantumruy Pro', sans-serif;
-            background-color: #f4f7f6;
+            background-color: #f8f9fa; /* ផ្ទៃខាងក្រោយពណ៌ប្រផេះស្រាល */
         }
-        /* លាក់ព្រួញសម្រាប់ input type number (ទោះបីយើងមិនប្រើ តែល្អសម្រាប់ពេលក្រោយ) */
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
+        /* លាក់ព្រួញសម្រាប់ input type number */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
@@ -28,239 +22,234 @@
         }
         /* រចនាប័ទ្មសម្រាប់ spinner */
         .loader {
-            border-top-color: #3498db;
-            -webkit-animation: spin 1s linear infinite;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
             animation: spin 1s linear infinite;
-        }
-        @-webkit-keyframes spin {
-            0% { -webkit-transform: rotate(0deg); }
-            100% { -webkit-transform: rotate(360deg); }
         }
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
         
+        /* រចនាប័ទ្មសម្រាប់ Custom Dropdown */
+        #employee-dropdown .dropdown-item img {
+            min-width: 40px; /* ធានាថាទំហំរូបថតមិនរួញ */
+        }
+
         /* --- រចនាប័ទ្មសម្រាប់ Print --- */
         @media print {
             /* លាក់ធាតុដែលមិនត្រូវបោះពុម្ព */
-            body > .max-w-5xl > *:not(#report-output) {
-                display: none;
-            }
-            .no-print {
+            body > header, 
+            #api-key-section, 
+            #filter-section, 
+            #print-button, 
+            #message-box {
                 display: none !important;
             }
 
-            /* កំណត់ Body និង Container សម្រាប់ Print */
-            body, .max-w-5xl {
-                padding: 0 !important;
-                margin: 0 !important;
-                background-color: #ffffff !important;
-                box-shadow: none !important;
-                border: none !important;
+            /* ធានាថារបាយការណ៍បង្ហាញពេញ */
+            body {
+                background-color: #ffffff;
             }
-
-            /* កំណត់ផ្នែករបាយការណ៍ */
             #report-output {
                 display: block !important;
-                margin: 0 !important;
-                padding: 1cm !important; /* បន្ថែមគែមសម្រាប់ក្រដាស */
-                box-shadow: none !important;
-                border: none !important;
-                max-width: 100% !important;
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                margin: 0;
+                width: 100%;
+                max-width: 100%;
             }
-            
-            h1, h2, p, span {
-                color: #000000 !important;
-            }
-
-            /* ធានាថាតារាងមើលទៅស្អាតពេល Print */
-            table {
-                width: 100% !important;
-                border-collapse: collapse !important;
-            }
-            thead {
-                background-color: #f0f0f0 !important;
-                display: table-header-group; /* ធានាថា Header ជាប់រាល់ទំព័រ */
-            }
-            th, td {
-                border: 1px solid #999 !important;
-                padding: 8px !important;
-                color: #000000 !important;
-            }
-            /* លុបផ្ទៃខាងក្រោយឆ្លាស់គ្នា */
-            tbody tr {
-                background-color: #ffffff !important;
-            }
-            /* ជៀសវាងការកាត់ផ្តាច់ព័ត៌មានសង្ខេប */
             #employee-summary {
-                page-break-inside: avoid;
-                background-color: #f9f9f9 !important;
-                border: 1px solid #ccc !important;
+                padding-top: 0;
+                padding-bottom: 0;
+                border: none;
+                box-shadow: none;
             }
-            
-            #no-records {
-                display: none; /* លាក់សារ "មិនមានទិន្នន័យ" ពេល Print បើមាន */
+            table {
+                box-shadow: none;
+            }
+            /* កុំឲ្យតារាងបាក់បែកពេលបោះពុម្ព */
+            tr {
+                page-break-inside: avoid;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 1.5cm;
+            }
+            h1, h2 {
+                page-break-after: avoid;
             }
         }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="bg-gray-100">
 
-    <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-xl p-6 md:p-10">
-        
-        <!-- បឋម -->
-        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-            របាយការណ៍វត្តមានបុគ្គលិក
-        </h1>
-        <p class="text-base text-gray-600 mb-8">
-            បង្កើតរបាយការណ៍លម្អិតដោយទាញទិន្នន័យពី Google Sheets។
-        </p>
-
-        <!-- ផ្នែកកំណត់ API Key -->
-        <div class="mb-8 p-5 bg-blue-50 border border-blue-200 rounded-lg">
-            <label for="api-key" class="block text-sm font-semibold text-blue-800 mb-2">
-                <span class="text-red-600">*</span> ជំហានទី១៖ បញ្ចូល Google Sheets API Key
-            </label>
-            <input type="password" id="api-key" placeholder="បិទភ្ជាប់ API Key របស់អ្នកនៅទីនេះ"
-                   class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-            <p class="text-xs text-gray-600 mt-2">
-                កម្មវិធីនេះត្រូវការ API Key ដើម្បីទាញទិន្នន័យពី Google Sheet។ ទិន្នន័យ Sheet ត្រូវតែកំណត់ជាសាធារណៈ (Public)។
-            </p>
+    <!-- បឋមកថា -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="container mx-auto max-w-6xl px-4 py-5">
+            <h1 class="text-3xl font-bold text-gray-800">របាយការណ៍វត្តមានបុគ្គលិក</h1>
+            <p class="text-md text-gray-500">បង្កើតរបាយការណ៍ដោយទាញទិន្នន័យពី Google Sheets។</p>
         </div>
+    </header>
 
-        <!-- ផ្នែកបញ្ជា (Controls) -->
-        <h2 class="text-lg font-semibold text-gray-700 mb-3">ជំហានទី២៖ កំណត់ការស្វែងរក</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <!-- ជ្រើសរើសបុគ្គលិក -->
+    <!-- ផ្ទៃមេ -->
+    <main class="container mx-auto max-w-6xl p-4 mt-6">
+        
+        <!-- ប្រអប់ API Key -->
+        <section id="api-key-section" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-6">
+            <h2 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                <span class="flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full text-sm font-bold mr-3">1</span>
+                ជំហានទី១: បញ្ចូល Google Sheets API Key
+            </h2>
+            <div class="mb-4 p-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-md">
+                <span class="font-bold">* ចំណាំ:</span> អ្នកត្រូវមាន API Key ផ្ទាល់ខ្លួន ហើយបើកសិទ្ធិ Google Sheets API។ Sheet ត្រូវតែកំណត់ជា (Public)។
+            </div>
             <div>
-                <label for="employee-input" class="block text-sm font-medium text-gray-700 mb-1">
-                    ជ្រើសរើសបុគ្គលិក (វាយ ID ឬ ឈ្មោះ)
+                <label for="api-key" class="block text-sm font-medium text-gray-700 mb-1">
+                    Google Sheets API Key <span class="text-red-500">*</span>
                 </label>
-                <input type="text" id="employee-input" list="employee-list" 
-                       placeholder="វាយដើម្បីស្វែងរក..."
-                       class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" disabled>
-                <datalist id="employee-list"></datalist>
+                <input type="password" id="api-key" placeholder="បិទភ្ជាប់ API Key របស់អ្នកនៅទីនេះ" 
+                       class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <button id="fetch-button" 
+                    class="mt-4 w-full md:w-auto px-6 py-2 bg-blue-600 text-white font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd" />
+                </svg>
+                ទាញទិន្នន័យពី Sheet
+            </button>
+        </section>
+
+        <!-- ប្រអប់ Filter -->
+        <section id="filter-section" class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-6">
+            <h2 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                <span class="flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full text-sm font-bold mr-3">2</span>
+                ជំហានទី២: កំណត់ការស្វែងរក
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <!-- ជ្រើសរើសបុគ្គលិក -->
+                <div>
+                    <label for="employee-input" class="block text-sm font-medium text-gray-700 mb-1">
+                        ជ្រើសរើសបុគ្គលិក (វាយ ID ឬ ឈ្មោះ)
+                    </label>
+                    <!-- Custom Dropdown Container -->
+                    <div id="employee-search-container" class="relative">
+                        <input type="text" id="employee-input" 
+                               placeholder="វាយដើម្បីស្វែងរក..."
+                               class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" 
+                               disabled autocomplete="off">
+                        <!-- Custom Dropdown Box -->
+                        <div id="employee-dropdown" 
+                             class="hidden absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-60 overflow-y-auto shadow-lg">
+                            <!-- ធាតុ Dropdown នឹងត្រូវបានបញ្ចូលដោយ JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- ជ្រើសរើសថ្ងៃចាប់ផ្ដើម -->
+                <div>
+                    <label for="start-date" class="block text-sm font-medium text-gray-700 mb-1">ចាប់ពីថ្ងៃទី</label>
+                    <input type="date" id="start-date" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                
+                <!-- ជ្រើសរើសថ្ងៃបញ្ចប់ -->
+                <div>
+                    <label for="end-date" class="block text-sm font-medium text-gray-700 mb-1">ដល់ថ្ងៃទី</label>
+                    <input type="date" id="end-date" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                </div>
+            </div>
+
+            <button id="generate-button" 
+                    class="w-full md:w-auto px-6 py-2 bg-green-600 text-white font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center justify-center" disabled>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                </svg>
+                បង្កើតរបាយការណ៍
+            </button>
+        </section>
+
+        <!-- ប្រអប់ Loader/Error/Message -->
+        <section id="message-box" class="hidden mb-6">
+            <!-- Loader -->
+            <div id="loader" class="hidden items-center justify-center p-4">
+                <div class="loader"></div>
+                <span class="text-gray-600 text-lg ml-4">កំពុងទាញទិន្នន័យ...</span>
+            </div>
+            <!-- Error Message -->
+            <div id="error-message" class="hidden p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
+                <!-- សារ Error នឹងបង្ហាញនៅទីនេះ -->
+            </div>
+        </section>
+
+        <!-- លទ្ធផលរបាយការណ៍ -->
+        <section id="report-output" class="hidden bg-white p-6 md:p-10 rounded-lg shadow-lg border border-gray-200 mb-10">
+            <!-- ប៊ូតុង Print -->
+            <button id="print-button" 
+                    onclick="window.print()"
+                    class="w-full md:w-auto px-6 py-2 mb-6 bg-gray-700 text-white font-medium rounded-md shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                ទាញយក PDF / បោះពុម្ព
+            </button>
+
+            <!-- ចំណងជើងរបាយការណ៍ -->
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-gray-900">របាយការណ៍វត្តមានបុគ្គលិកប្រចាំខែ</h2>
+                <p id="report-date-range" class="text-md text-gray-600"></p>
             </div>
             
-            <!-- ជ្រើសរើសថ្ងៃចាប់ផ្ដើម -->
-            <div>
-                <label for="start-date" class="block text-sm font-medium text-gray-700 mb-1">
-                    ចាប់ពីថ្ងៃទី
-                </label>
-                <input type="date" id="start-date" 
-                       class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-            </div>
-
-            <!-- ជ្រើសរើសថ្ងៃបញ្ចប់ -->
-            <div>
-                <label for="end-date" class="block text-sm font-medium text-gray-700 mb-1">
-                    ដល់ថ្ងៃទី
-                </label>
-                <input type="date" id="end-date" 
-                       class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-            </div>
-        </div>
-
-        <!-- ប៊ូតុងបង្កើតរបាយការណ៍ -->
-        <div class="flex flex-col md:flex-row gap-4 border-t pt-6 mt-6">
-             <button id="fetch-button" 
-                    class="w-full md:w-1/2 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
-                 ១. ទាញទិន្នន័យបុគ្គលិក
-             </button>
-            <button id="generate-button" 
-                    class="w-full md:w-1/2 bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out" disabled>
-                ២. បង្កើតរបាយការណ៍
-            </button>
-        </div>
-
-        <!-- កន្លែងបង្ហាញ Error ឬ Loading -->
-        <div id="message-box" class="mt-6 hidden">
-            <!-- Spinner -->
-            <div id="loader" class="hidden justify-center items-center">
-                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mr-3"></div>
-                <span class="text-gray-600">កំពុងទាញទិន្នន័យ...</span>
-            </div>
-            <!-- Error -->
-            <div id="error-message" class="hidden p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-                <!-- ខ្លឹមសារ Error នឹងបង្ហាញនៅទីនេះ -->
-            </div>
-        </div>
-
-        <!-- ផ្នែកបង្ហាញលទ្ធផល (របាយការណ៍) -->
-        <div id="report-output" class="mt-10 hidden">
-
-            <!-- ប៊ូតុង Print/PDF -->
-            <div class="flex justify-between items-center mb-6">
-                 <h2 class="text-xl md:text-2xl font-bold text-gray-800 border-b-2 border-blue-200 pb-2 flex-grow">
-                    របាយការណ៍លម្អិត
-                </h2>
-                <button id="print-button" 
-                        onclick="window.print()"
-                        class="no-print ml-6 bg-gray-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition duration-150 ease-in-out flex items-center shrink-0">
-                    <!-- SVG Icon for Print -->
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v6a2 2 0 002 2h1v3a1 1 0 001 1h8a1 1 0 001-1v-3h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a1 1 0 00-1-1H6a1 1 0 00-1 1zM6 4h8v3H6V4zm8 12H6v-3h8v3zm-1-6H7v-2h6v2z" clip-rule="evenodd"></path>
-                    </svg>
-                    ទាញយក PDF / បោះពុម្ព
-                </button>
-            </div>
-
             <!-- ព័ត៌មានសង្ខេបរបស់បុគ្គលិក -->
             <div id="employee-summary" 
-                 class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4 p-6 bg-gray-50 rounded-lg shadow-sm mb-8 border border-gray-200">
+                 class="grid grid-cols-1 sm:grid-cols-4 gap-x-6 gap-y-4 p-6 bg-gray-50 rounded-lg shadow-sm mb-8 border border-gray-200">
                 <!-- ព័ត៌មានបុគ្គលិកនឹងបង្ហាញនៅទីនេះ -->
             </div>
 
             <!-- តារាងលម្អិតវត្តមាន -->
-            <div class="overflow-x-auto shadow-md rounded-lg">
-                <table class="min-w-full divide-y divide-gray-200">
+            <div class="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+                <table id="report-table" class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-100">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
-                                ល.រ
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
-                                កាលបរិច្ឆេទ
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
-                                កាលវិភាគ
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
-                                ម៉ោងចូល
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">
-                                ម៉ោងចេញ
-                            </th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">ល.រ</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">កាលបរិច្ឆេទ</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">កាលវិភាគ</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">ម៉ោងចូល</th>
+                            <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">ម៉ោងចេញ</th>
                         </tr>
                     </thead>
                     <tbody id="report-table-body" class="bg-white divide-y divide-gray-200">
-                        <!-- ទិន្នន័យវត្តមាននឹងបង្ហាញនៅទីនេះ -->
+                        <!-- ទិន្នន័យតារាងនឹងបង្ហាញនៅទីនេះ -->
                     </tbody>
                 </table>
             </div>
-            
-            <div id="no-records" class="hidden text-center p-6 bg-gray-50 rounded-lg mt-4">
-                <p class="text-gray-600">មិនមានទិន្នន័យវត្តមានសម្រាប់បុគ្គលិកនេះ ក្នុងចន្លោះកាលបរិច្ឆេទដែលបានជ្រើសរើសទេ។</p>
-            </div>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <script>
         // --- ផ្នែកកំណត់ค่าអចិន្ត្រៃយ៍ ---
         const SHEET_ID = '14eA00GXamqLkhuLAzVYPOBKads7XUZ5mfVRyqSGQwfk';
         const SHEET_NAME = 'Data';
-        // យើងនឹងទាញទិន្នន័យពីជួរ B ដល់ K
-        const DATA_RANGE = `${SHEET_NAME}!B2:K`; 
+        const DATA_RANGE = `${SHEET_NAME}!B2:K`; // វត្តមាន
+        
+        const PHOTO_SHEET_ID = '1eRyPoifzyvB4oBmruNyXcoKMKPRqjk6xDD6-bPNW6pc';
+        const PHOTO_SHEET_NAME = 'DIList';
+        // E=ID (index 0), AA=Photo URL (index 22), ចាប់ពីជួរទី 9
+        const PHOTO_DATA_RANGE = `${PHOTO_SHEET_NAME}!E9:AA`; 
 
         // --- ផ្នែករក្សាទុកទិន្នន័យដែលបានទាញមក ---
         let allData = []; // រក្សាទុកទិន្នន័យឆៅទាំងអស់ពី Sheet
         let employeeMap = new Map(); // រក្សាទុកព័ត៌មានបុគ្គលិក (Unique)
+        let photoMap = new Map(); // រក្សាទុក ID -> Photo URL
 
         // --- ផ្នែកយោងទៅធាតុ DOM ---
         const apiKeyInput = document.getElementById('api-key');
         const employeeInput = document.getElementById('employee-input');
-        const employeeList = document.getElementById('employee-list');
+        const employeeDropdown = document.getElementById('employee-dropdown');
         const startDateInput = document.getElementById('start-date');
         const endDateInput = document.getElementById('end-date');
         const fetchButton = document.getElementById('fetch-button');
@@ -271,70 +260,55 @@
         const errorMessage = document.getElementById('error-message');
         
         const reportOutput = document.getElementById('report-output');
+        const reportDateRange = document.getElementById('report-date-range');
         const employeeSummary = document.getElementById('employee-summary');
         const reportTableBody = document.getElementById('report-table-body');
-        const noRecordsMessage = document.getElementById('no-records');
 
-        // --- មុខងារ Helper (ជំនួយ) ---
+        // --- Key សម្រាប់ Local Storage ---
+        const API_KEY_STORAGE = 'googleSheetsApiKey';
 
-        /**
-         * បង្ហាញសារ Error
-         * @param {string} message - ខ្លឹមសារ Error
-         */
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.classList.remove('hidden');
-            loader.classList.add('hidden');
-            messageBox.classList.remove('hidden');
-        }
+        // --- មុខងារសម្រាប់ UI ---
 
-        /**
-         * បង្ហាញ Spinner ពេលកំពុងដំណើរការ
-         */
         function showLoader() {
-            errorMessage.classList.add('hidden');
-            loader.style.display = 'flex'; // ប្រើ style.display ព្រោះ Tailwind class 'flex' ត្រូវ set ដោយផ្ទាល់
-            loader.classList.remove('hidden');
             messageBox.classList.remove('hidden');
-            reportOutput.classList.add('hidden'); // លាក់លទ្ធផលចាស់
+            loader.classList.remove('hidden');
+            loader.classList.add('flex');
+            errorMessage.classList.add('hidden');
+            fetchButton.disabled = true;
+            generateButton.disabled = true;
+            fetchButton.textContent = "កំពុងទាញទិន្នន័យ...";
         }
 
-        /**
-         * លាក់ Spinner និង Error
-         */
         function hideMessages() {
             messageBox.classList.add('hidden');
             loader.classList.add('hidden');
+            loader.classList.remove('flex');
             errorMessage.classList.add('hidden');
+            fetchButton.disabled = false;
         }
 
-        /**
-         * បំប្លែងកាលបរិច្ឆេទពីទម្រង់ "1-Aug-2025" ទៅជា Object Date
-         * @param {string} dateString - កាលបរិច្ឆេទជាអត្ថបទ (ឧ. 1-Aug-2025)
-         * @returns {Date | null} - Object Date ឬ null បើទម្រង់ខុស
-         */
-        function parseSheetDate(dateString) {
-            if (!dateString) return null;
-            
-            const months = {
-                'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
-                'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
-            };
-            
-            const parts = dateString.split('-'); // ["1", "Aug", "2025"]
-            if (parts.length !== 3) return null;
-            
-            const day = parseInt(parts[0], 10);
-            const month = months[parts[1]];
-            const year = parseInt(parts[2], 10);
-            
-            if (isNaN(day) || month === undefined || isNaN(year)) return null;
-            
-            // កំណត់ម៉ោង 00:00:00 ដើម្បីងាយស្រួលប្រៀបធៀប
-            return new Date(year, month, day, 0, 0, 0); 
+        function showError(message) {
+            messageBox.classList.remove('hidden');
+            loader.classList.add('hidden');
+            loader.classList.remove('flex');
+            errorMessage.classList.remove('hidden');
+            errorMessage.classList.replace('bg-green-100', 'bg-red-100');
+            errorMessage.classList.replace('border-green-400', 'border-red-400');
+            errorMessage.classList.replace('text-green-700', 'text-red-700');
+            errorMessage.textContent = message;
+            fetchButton.disabled = false;
+            fetchButton.textContent = "ទាញទិន្នន័យពី Sheet";
+        }
+        
+        // មុខងារជួយបំប្លែង Date ទៅជាទម្រង់ YYYY-MM-DD តាមម៉ោងតំបន់
+        function formatLocalDate(date) {
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
 
-        // --- មុខងារស្នូល (Core Functions) ---
+        // --- មុខងារស្នូល ---
 
         /**
          * ទាញទិន្នន័យទាំងអស់ពី Google Sheet
@@ -345,31 +319,61 @@
                 showError('សូមបញ្ចូល API Key ជាមុនសិន។');
                 return;
             }
+            
+            // រក្សាទុក API Key ទៅក្នុង Local Storage
+            localStorage.setItem(API_KEY_STORAGE, apiKey);
 
             showLoader();
             allData = [];
             employeeMap.clear();
-            employeeList.innerHTML = ''; // សម្អាត Datalist ចាស់
+            photoMap.clear();
+            employeeDropdown.innerHTML = ''; // សម្អាត Dropdown ចាស់
 
-            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${DATA_RANGE}?key=${apiKey}`;
+            const attendanceUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${DATA_RANGE}?key=${apiKey}`;
+            const photoUrl = `https://sheets.googleapis.com/v4/spreadsheets/${PHOTO_SHEET_ID}/values/${PHOTO_DATA_RANGE}?key=${apiKey}`;
 
             try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error.message || 'មិនអាចទាញទិន្នន័យបានទេ។ សូមពិនិត្យ API Key ឬ Sheet ID។');
+                // ទាញទិន្នន័យទាំងពីរព្រមគ្នា
+                const [attendanceResponse, photoResponse] = await Promise.all([
+                    fetch(attendanceUrl),
+                    fetch(photoUrl)
+                ]);
+
+                if (!attendanceResponse.ok) {
+                    const errorData = await attendanceResponse.json();
+                    throw new Error(`[Attendance Sheet] ${errorData.error.message || 'មិនអាចទាញទិន្នន័យវត្តមានបានទេ'}`);
+                }
+                if (!photoResponse.ok) {
+                    const errorData = await photoResponse.json();
+                    throw new Error(`[Photo Sheet] ${errorData.error.message || 'មិនអាចទាញទិន្នន័យរូបថតបានទេ'}`);
                 }
 
-                const data = await response.json();
-                const values = data.values;
+                const attendanceData = await attendanceResponse.json();
+                const photoData = await photoResponse.json();
+                
+                const attendanceValues = attendanceData.values;
+                const photoValues = photoData.values;
 
-                if (!values || values.length === 0) {
-                    showError('រកមិនឃើញទិន្នន័យនៅក្នុង Sheet ទេ។');
+                if (!attendanceValues || attendanceValues.length === 0) {
+                    showError('រកមិនឃើញទិន្នន័យវត្តមាននៅក្នុង Sheet ទេ។');
                     return;
                 }
 
-                // ចាប់ផ្ដើមដំណើរការទិន្នន័យ
-                values.forEach(row => {
+                // 1. ដំណើរការទិន្នន័យរូបថតជាមុន (ID -> URL)
+                if (photoValues && photoValues.length > 0) {
+                    photoValues.forEach(row => {
+                        const id = row[0]; // ជួរឈរ E (index 0 នៃ E9:AA)
+                        if (row.length > 22) { // ត្រូវប្រាកដថាជួរ AA មាន
+                            const photoUrl = row[22]; // ជួរឈរ AA (index 22 នៃ E9:AA)
+                            if (id && photoUrl) {
+                                photoMap.set(id, photoUrl);
+                            }
+                        }
+                    });
+                }
+
+                // 2. ដំណើរការទិន្នន័យវត្តមាន
+                attendanceValues.forEach(row => {
                     // Mapping តាមជួរឈរដែលបានស្នើ B=0, C=1, D=2, E=3, F=4, G=5, H=6, I=7, J=8, K=9
                     const record = {
                         group: row[0] || '',     // B
@@ -391,20 +395,22 @@
                         // បង្កើត Unique List សម្រាប់បុគ្គលិក
                         const employeeKey = `${record.id} - ${record.name}`;
                         if (!employeeMap.has(employeeKey)) {
+                            // ទាញយករូបថតពី photoMap
+                            const photo = photoMap.get(record.id) || 'https://placehold.co/100x100/eeeeee/aaaaaa?text=?';
+                            
                             employeeMap.set(employeeKey, {
                                 id: record.id,
                                 name: record.name,
                                 gender: record.gender,
                                 group: record.group,
                                 department: record.department,
-                                class: record.class
+                                class: record.class,
+                                photo: photo // បន្ថែមរូបថត
                             });
                         }
                     }
                 });
                 
-                // បញ្ចូលទិន្នន័យទៅក្នុង Datalist
-                populateDatalist();
                 hideMessages();
                 
                 // បើកឲ្យប្រើប្រាស់ Input និងប៊ូតុងបង្កើតរបាយការណ៍
@@ -429,18 +435,6 @@
         }
 
         /**
-         * បញ្ចូលឈ្មោះបុគ្គលិកទៅក្នុង <datalist>
-         */
-        function populateDatalist() {
-            employeeList.innerHTML = ''; // សម្អាត
-            for (const key of employeeMap.keys()) {
-                const option = document.createElement('option');
-                option.value = key;
-                employeeList.appendChild(option);
-            }
-        }
-
-        /**
          * បង្កើត និងបង្ហាញរបាយការណ៍
          */
         function generateReport() {
@@ -448,73 +442,104 @@
             const startDate = startDateInput.value;
             const endDate = endDateInput.value;
 
-            // --- ពិនិត្យ Input ---
+            // ផ្ទៀងផ្ទាត់ Input
             if (!selectedEmployeeKey || !employeeMap.has(selectedEmployeeKey)) {
-                showError('សូមជ្រើសរើសបុគ្គលិកពីក្នុងបញ្ជី។');
+                alert('សូមជ្រើសរើសបុគ្គលិកពីក្នុងបញ្ជី។');
                 return;
             }
             if (!startDate || !endDate) {
-                showError('សូមជ្រើសរើសចន្លោះកាលបរិច្ឆេទ (ថ្ងៃចាប់ផ្ដើម និង ថ្ងៃបញ្ចប់)។');
+                alert('សូមជ្រើសរើសថ្ងៃចាប់ផ្តើម និងថ្ងៃបញ្ចប់។');
                 return;
             }
 
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            
-            // កំណត់ម៉ោងឲ្យត្រូវ ដើម្បីប្រៀបធៀប
-            start.setHours(0, 0, 0, 0);
-            end.setHours(23, 59, 59, 999); 
-
-            if (start > end) {
-                showError('ថ្ងៃចាប់ផ្ដើម មិនអាចធំជាងថ្ងៃបញ្ចប់បានទេ។');
-                return;
-            }
-
-            hideMessages();
-            
-            // --- ដំណើរការទិន្នន័យ ---
             const employeeInfo = employeeMap.get(selectedEmployeeKey);
+            const employeeId = employeeInfo.id;
             
-            //  lọc (Filter) ទិន្នន័យវត្តមាន
-            const records = allData.filter(record => {
-                const recordDate = parseSheetDate(record.date);
-                if (!recordDate) return false; // រំលងបើថ្ងៃខែទម្រង់ខុស
+            // បំប្លែង Date សម្រាប់ប្រៀបធៀប (ប្រើ Date object ងាយស្រួលជាង)
+            const filterStartDate = new Date(startDate + 'T00:00:00');
+            const filterEndDate = new Date(endDate + 'T23:59:59');
+
+            // 1. ត្រងទិន្នន័យ
+            const filteredRecords = allData.filter(record => {
+                if (record.id !== employeeId) return false;
                 
-                return record.id === employeeInfo.id &&
-                       record.name === employeeInfo.name &&
-                       recordDate >= start &&
-                       recordDate <= end;
+                // បំប្លែងទម្រង់ថ្ងៃខែពី '1-Aug-2025' ទៅជា Date object
+                const dateParts = record.date.split('-'); // ["1", "Aug", "2025"]
+                if (dateParts.length !== 3) return false; // ទម្រង់មិនត្រឹមត្រូវ
+                
+                // បំប្លែងខែជាអក្សរ ទៅជាលេខ
+                const months = {
+                    'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+                    'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+                };
+                
+                const day = parseInt(dateParts[0]);
+                const month = months[dateParts[1]];
+                const year = parseInt(dateParts[2]);
+
+                if (isNaN(day) || month === undefined || isNaN(year)) {
+                    console.warn('Skipping invalid date format:', record.date);
+                    return false; // រំលងបើទម្រង់ថ្ងៃខែខុស
+                }
+
+                const recordDate = new Date(year, month, day);
+                
+                return recordDate >= filterStartDate && recordDate <= filterEndDate;
             });
             
-            // --- បង្ហាញលទ្ធផល ---
-            renderReport(employeeInfo, records);
+            // 2. តម្រៀបទិន្នន័យតាមថ្ងៃខែ
+            filteredRecords.sort((a, b) => {
+                // ប្រើវិធីសាស្ត្រដដែលដើម្បីបំប្លែងថ្ងៃខែសម្រាប់តម្រៀប
+                const datePartsA = a.date.split('-');
+                const datePartsB = b.date.split('-');
+                const months = {
+                    'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+                    'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+                };
+                const dateA = new Date(parseInt(datePartsA[2]), months[datePartsA[1]], parseInt(datePartsA[0]));
+                const dateB = new Date(parseInt(datePartsB[2]), months[datePartsB[1]], parseInt(datePartsB[0]));
+                return dateA - dateB;
+            });
+
+            // 3. បង្ហាញលទ្ធផល
+            renderReport(employeeInfo, filteredRecords, startDate, endDate);
         }
 
         /**
          * បង្ហាញលទ្ធផលទៅលើ UI
          * @param {object} info - ព័ត៌មានបុគ្គលិក
-         * @param {array} records - បញ្ជីវត្តមានដែលបាន lọc រួច
+         * @param {Array} records - បញ្ជីវត្តមានដែលបានត្រង
+         * @param {string} startDate - ថ្ងៃចាប់ផ្តើម (សម្រាប់បង្ហាញ)
+         * @param {string} endDate - ថ្ងៃបញ្ចប់ (សម្រាប់បង្ហាញ)
          */
-        function renderReport(info, records) {
+        function renderReport(info, records, startDate, endDate) {
+            // 0. បង្ហាញថ្ងៃខែរបាយការណ៍
+            reportDateRange.textContent = `ចាប់ពីថ្ងៃទី ${startDate} ដល់ថ្ងៃទី ${endDate}`;
+
             // 1. បង្ហាញព័ត៌មានសង្ខេប
             employeeSummary.innerHTML = `
-                <div class="col-span-1 sm:col-span-2 md:col-span-3">
-                    <p class="text-lg font-bold text-blue-800">${info.name}</p>
+                <div class="col-span-1 row-span-2 flex items-center justify-center">
+                    <img src="${info.photo}" alt="រូបថតបុគ្គលិក" 
+                         class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg" 
+                         onerror="this.src='https://placehold.co/100x100/eeeeee/aaaaaa?text=?'; this.onerror=null;">
+                </div>
+                <div class="col-span-1 sm:col-span-3">
+                    <p class="text-xl font-bold text-blue-800">${info.name}</p>
                     <p class="text-sm text-gray-600">អត្តលេខ: ${info.id}</p>
                 </div>
-                <div>
+                <div class="col-span-1 sm:col-span-1">
                     <span class="text-xs font-semibold text-gray-500 block">ភេទ</span>
                     <span class="text-sm font-medium text-gray-800">${info.gender || 'N/A'}</span>
                 </div>
-                <div>
+                <div class="col-span-1 sm:col-span-1">
                     <span class="text-xs font-semibold text-gray-500 block">ក្រុម</span>
                     <span class="text-sm font-medium text-gray-800">${info.group || 'N/A'}</span>
                 </div>
-                <div>
+                <div class="col-span-1 sm:col-span-1">
                     <span class="text-xs font-semibold text-gray-500 block">ផ្នែក</span>
                     <span class="text-sm font-medium text-gray-800">${info.department || 'N/A'}</span>
                 </div>
-                <div>
+                <div class="col-span-1 sm:col-span-1">
                     <span class="text-xs font-semibold text-gray-500 block">ថ្នាក់</span>
                     <span class="text-sm font-medium text-gray-800">${info.class || 'N/A'}</span>
                 </div>
@@ -522,56 +547,118 @@
 
             // 2. បង្ហាញតារាងលម្អិត
             reportTableBody.innerHTML = ''; // សម្អាតតារាងចាស់
-            
             if (records.length === 0) {
-                noRecordsMessage.classList.remove('hidden');
+                reportTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-4 py-6 text-center text-gray-500">
+                            មិនមានទិន្នន័យវត្តមានសម្រាប់បុគ្គលិកនេះ ក្នុងចន្លោះថ្ងៃខែដែលបានជ្រើសរើសទេ។
+                        </td>
+                    </tr>
+                `;
             } else {
-                noRecordsMessage.classList.add('hidden');
-                
-                // តម្រៀបតាមកាលបរិច្ឆេទ ពីចាស់ទៅថ្មី
-                records.sort((a, b) => parseSheetDate(a.date) - parseSheetDate(b.date));
-                
                 records.forEach((record, index) => {
                     const row = document.createElement('tr');
-                    row.className = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                    row.className = (index % 2 === 0) ? 'bg-white' : 'bg-gray-50';
                     row.innerHTML = `
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            ${index + 1}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            ${record.date}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            ${record.schedule || ''}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            ${record.timeIn || 'N/A'}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                            ${record.timeOut || 'N/A'}
-                        </td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${index + 1}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${record.date}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${record.schedule || 'N/A'}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${record.timeIn || 'N/A'}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${record.timeOut || 'N/A'}</td>
                     `;
                     reportTableBody.appendChild(row);
                 });
             }
-            
-            // 3. បង្ហាញផ្នែកលទ្ធផលទាំងមូល
+
+            // 3. បង្ហាញផ្នែកលទ្ធផល
             reportOutput.classList.remove('hidden');
-            
             // រំកិលអេក្រង់ទៅមើលលទ្ធផល
             reportOutput.scrollIntoView({ behavior: 'smooth' });
         }
         
+        /**
+         * (មុខងារថ្មី) បង្កើត និងបង្ហាញ Custom Dropdown
+         * @param {string} filterText - អត្ថបទសម្រាប់ lọc
+         */
+        function filterAndShowDropdown(filterText = '') {
+            employeeDropdown.innerHTML = '';
+            const lowerFilter = filterText.toLowerCase();
+            let count = 0;
+            
+            // Lọc តាម key (ID - Name)
+            const matchingKeys = Array.from(employeeMap.keys()).filter(key => 
+                key.toLowerCase().includes(lowerFilter)
+            );
+
+            if (matchingKeys.length === 0) {
+                employeeDropdown.innerHTML = '<div class="p-2 text-gray-500 text-sm">រកមិនឃើញ...</div>';
+            } else {
+                // បង្ហាញតែ 10 លទ្ធផលដំបូង
+                for (const key of matchingKeys) {
+                    if (count >= 10) break; 
+                    
+                    const employee = employeeMap.get(key);
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item p-2 flex items-center hover:bg-gray-100 cursor-pointer border-b border-gray-100';
+                    item.innerHTML = `
+                        <img src="${employee.photo}" alt="" 
+                             class="w-10 h-10 rounded-full object-cover mr-3 border flex-shrink-0" 
+                             onerror="this.src='https://placehold.co/40x40/eeeeee/aaaaaa?text=?'; this.onerror=null;">
+                        <div>
+                            <div class="text-sm font-medium text-gray-800">${employee.name}</div>
+                            <div class="text-xs text-gray-500">${employee.id}</div>
+                        </div>
+                    `;
+                    
+                    // កំណត់ Event ពេលចុចលើ Item
+                    item.onclick = () => {
+                        employeeInput.value = key; // បញ្ចូល Key (ID - Name) ទៅក្នុង Input
+                        employeeDropdown.classList.add('hidden'); // លាក់ Dropdown
+                    };
+                    
+                    employeeDropdown.appendChild(item);
+                    count++;
+                }
+            }
+            employeeDropdown.classList.remove('hidden'); // បង្ហាញ Dropdown
+        }
+
         // --- ភ្ជាប់ Event Listeners ---
         fetchButton.addEventListener('click', fetchSheetData);
         generateButton.addEventListener('click', generateReport);
         
+        // --- Event Listeners សម្រាប់ Custom Dropdown ---
+        employeeInput.addEventListener('input', () => {
+            filterAndShowDropdown(employeeInput.value);
+        });
+        
+        employeeInput.addEventListener('focus', () => {
+            filterAndShowDropdown(employeeInput.value);
+        });
+        
+        // លាក់ Dropdown នៅពេលចុចខាងក្រៅ
+        document.addEventListener('click', (e) => {
+            if (!document.getElementById('employee-search-container').contains(e.target)) {
+                employeeDropdown.classList.add('hidden');
+            }
+        });
+
+        // --- ផ្នែកចាប់ផ្តើមកម្មវិធី ---
+
         // កំណត់ថ្ងៃខែ Default (ឧ. ដើមខែ និង ថ្ងៃបច្ចុប្បន្ន)
         const today = new Date();
         const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         
-        startDateInput.value = firstDayOfMonth.toISOString().split('T')[0];
-        endDateInput.value = today.toISOString().split('T')[0];
+        startDateInput.value = formatLocalDate(firstDayOfMonth);
+        endDateInput.value = formatLocalDate(today);
+
+        // ពិនិត្យរក API Key ដែលបានរក្សាទុក នៅពេលទំព័របើក
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedApiKey = localStorage.getItem(API_KEY_STORAGE);
+            if (savedApiKey) {
+                apiKeyInput.value = savedApiKey;
+            }
+        });
 
     </script>
 
