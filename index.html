@@ -53,6 +53,7 @@
             /* ធានាថារបាយការណ៍បង្ហាញពេញ */
             body {
                 background-color: #ffffff;
+                font-size: 10pt; /* កំណត់ទំហំអក្សរពេល Print */
             }
             #report-output {
                 display: block !important;
@@ -63,22 +64,53 @@
                 width: 100%;
                 max-width: 100%;
             }
+            
+            /* រៀបចំ Layout សង្ខេបពេល Print */
             #employee-summary {
-                padding-top: 0;
-                padding-bottom: 0;
-                border: none;
+                padding: 1rem !important;
+                border: 1px solid #e5e7eb;
                 box-shadow: none;
+                /* ធានាថា Grid នៅតែដំណើរការ */
+                display: grid !important; 
+                grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+                gap: 1rem 1.5rem !important;
             }
+            #employee-summary img {
+                width: 80px !important;
+                height: 80px !important;
+            }
+            #employee-summary .col-span-1 { grid-column: span 1 / span 1 !important; }
+            #employee-summary .col-span-3 { grid-column: span 3 / span 3 !important; }
+            #employee-summary .row-span-2 { grid-row: span 2 / span 2 !important; }
+
+
+            /* បង្ហាញបន្ទាត់តារាងពេល Print */
             table {
                 box-shadow: none;
+                border-collapse: collapse !important;
+                width: 100%;
             }
+            thead {
+                display: table-header-group; /* ធានាថា Head ជាប់រាល់ទំព័រ */
+            }
+            tr {
+                page-break-inside: avoid;
+            }
+            th, td {
+                border: 1px solid #ddd !important; /* បន្ថែមបន្ទាត់ */
+                padding: 6px 8px !important; /* កែសម្រួល Padding */
+            }
+            th {
+                background-color: #f9fafb !important; /* ផ្ទៃក្បាលតារាង */
+            }
+
             /* កុំឲ្យតារាងបាក់បែកពេលបោះពុម្ព */
             tr {
                 page-break-inside: avoid;
             }
             @page {
-                size: A4 portrait;
-                margin: 1.5cm;
+                size: A4 landscape; /* កំណត់ជាទម្រង់ផ្ដេក */
+                margin: 1cm; /* កាត់បន្ថយ Margin */
             }
             h1, h2 {
                 page-break-after: avoid;
@@ -363,7 +395,7 @@
                 if (photoValues && photoValues.length > 0) {
                     photoValues.forEach(row => {
                         const id = row[0]; // ជួរឈរ E (index 0 នៃ E9:AA)
-                        if (row.length > 22) { // ត្រូវប្រាកដថាជួរ AA មាន
+                        if (row.length > 22) { // ត្រូវប្រាកដថាជួរ AA មាន (E ដល់ AA គឺ 23 ជួរ, index គឺ 22)
                             const photoUrl = row[22]; // ជួរឈរ AA (index 22 នៃ E9:AA)
                             if (id && photoUrl) {
                                 photoMap.set(id, photoUrl);
