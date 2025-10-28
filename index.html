@@ -298,6 +298,72 @@
 
         // --- Key សម្រាប់ Local Storage ---
         const API_KEY_STORAGE = 'googleSheetsApiKey';
+        
+        // --- មុខងារបំប្លែងថ្មី ---
+        const KHMER_NUMERALS = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
+        const KHMER_MONTHS = [
+            'មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 
+            'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'
+        ];
+
+        /**
+         * បំប្លែងលេខអារ៉ាប់ទៅជាលេខខ្មែរ
+         * @param {string | number} numberString - លេខដែលត្រូវបំប្លែង
+         * @returns {string} - លេខខ្មែរ
+         */
+        function toKhmerNumerals(numberString) {
+            return String(numberString).replace(/\d/g, d => KHMER_NUMERALS[d]);
+        }
+
+        /**
+         * បំប្លែង YYYY-MM-DD ទៅជាទ្រង់ទ្រាយខ្មែរ
+         * @param {string} dateString - ថ្ងៃខែ (YYYY-MM-DD)
+         * @returns {string} - ថ្ងៃខែជាភាសាខ្មែរ
+         */
+        function formatInputDateToKhmer(dateString) {
+            try {
+                const date = new Date(dateString + 'T00:00:00'); // ធានាថាជាម៉ោងក្នុងតំបន់
+                const day = toKhmerNumerals(date.getDate());
+                const month = KHMER_MONTHS[date.getMonth()];
+                const year = toKhmerNumerals(date.getFullYear());
+                return `ថ្ងៃទី${day} ខែ${month} ឆ្នាំ${year}`;
+            } catch (e) {
+                return dateString; // ត្រឡប់តម្លៃដើមបើមានបញ្ហា
+            }
+        }
+
+        /**
+         * បំប្លែង 1-Aug-2025 ទៅជាទ្រង់ទ្រាយខ្មែរ
+         * @param {string} sheetDate - ថ្ងៃខែពី Sheet (1-Aug-2025)
+         * @returns {string} - ថ្ងៃខែជាភាសាខ្មែរ
+         */
+        function formatSheetDateToKhmer(sheetDate) {
+            try {
+                const dateParts = sheetDate.split('-'); // ["1", "Aug", "2025"]
+                if (dateParts.length !== 3) return sheetDate;
+                
+                const months = {
+                    'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+                    'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+                };
+                
+                const dayNum = parseInt(dateParts[0]);
+                const monthIndex = months[dateParts[1]];
+                const yearNum = parseInt(dateParts[2]);
+
+                if (isNaN(dayNum) || monthIndex === undefined || isNaN(yearNum)) {
+                    return sheetDate;
+                }
+                
+                const day = toKhmerNumerals(dayNum);
+                const month = KHMER_MONTHS[monthIndex];
+                const year = toKhmerNumerals(yearNum);
+                
+                return `ថ្ងៃទី${day} ខែ${month} ឆ្នាំ${year}`;
+            } catch (e) {
+                return sheetDate;
+            }
+        }
 
         // --- មុខងារសម្រាប់ UI ---
 
@@ -545,8 +611,8 @@
          * @param {string} endDate - ថ្ងៃបញ្ចប់ (សម្រាប់បង្ហាញ)
          */
         function renderReport(info, records, startDate, endDate) {
-            // 0. បង្ហាញថ្ងៃខែរបាយការណ៍
-            reportDateRange.textContent = `ចាប់ពីថ្ងៃទី ${startDate} ដល់ថ្ងៃទី ${endDate}`;
+            // 0. បង្ហាញថ្ងៃខែរបាយការណ៍ (ទម្រង់ខ្មែរ)
+            reportDateRange.textContent = `ចាប់ពី ${formatInputDateToKhmer(startDate)} ដល់ ${formatInputDateToKhmer(endDate)}`;
 
             // 1. បង្ហាញព័ត៌មានសង្ខេប
             employeeSummary.innerHTML = `
@@ -592,8 +658,8 @@
                     const row = document.createElement('tr');
                     row.className = (index % 2 === 0) ? 'bg-white' : 'bg-gray-50';
                     row.innerHTML = `
-                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${index + 1}</td>
-                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${record.date}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${toKhmerNumerals(index + 1)}</td>
+                        <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${formatSheetDateToKhmer(record.date)}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${record.schedule || 'N/A'}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${record.timeIn || 'N/A'}</td>
                         <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${record.timeOut || 'N/A'}</td>
